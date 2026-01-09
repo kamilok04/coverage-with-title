@@ -11,13 +11,23 @@ async function run(): Promise<void> {
     core.debug(`coverageFile: ${coverageFile}`)
 
     const eventName = context.eventName
-    if (eventName !== 'pull_request') {
-      core.info(`action support only pull requests but event is ${eventName}`)
+
+    let base: string
+    let head: string
+    let prNumber: number | undefined
+
+    if (eventName === 'pull_request') {
+      const {pull_request} = context.payload
+      base = pull_request?.base.sha
+      head = pull_request?.head.sha
+      prNumber = pull_request?.number
+    } else if (eventName === 'push') {
+      base = context.payload.before
+      head = context.payload.after
+    } else {
+      core.info(`action supports only pull requests and pushes but event is ${eventName}`)
       return
     }
-    const {pull_request} = context.payload
-    const base = pull_request?.base.sha
-    const head = pull_request?.head.sha
 
     core.info(`comparing commits: base ${base} <> head ${head}`)
     const files = await compareCommits(base, head)
@@ -25,7 +35,7 @@ async function run(): Promise<void> {
 
     const report = readFile(coverageFile)
     const filesCoverage = parseCoverageReport(report, files)
-    const passOverall = scorePr(filesCoverage)
+    const passOverall = scorePr(filesCoverage, prNumber, head)
 
     if (!passOverall) {
       core.setFailed('Coverage is lower than configured threshold 😭')

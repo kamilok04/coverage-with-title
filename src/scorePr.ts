@@ -35,7 +35,7 @@ export async function publishMessage(pr: number, message: string): Promise<void>
   }
 }
 
-export function scorePr(filesCover: FilesCoverage): boolean {
+export function scorePr(filesCover: FilesCoverage, prNumber?: number, head?: string): boolean {
   let message = ''
   let passOverall = true
 
@@ -65,11 +65,16 @@ export function scorePr(filesCover: FilesCoverage): boolean {
     message = message.concat(`\n## Modified Files\nNo covered modified files...`)
     core.info('No covered modified files in this PR ')
   }
-  const sha = context.payload.pull_request?.head.sha.slice(0, 7)
+  const sha = (head || context.payload.pull_request?.head.sha || '').slice(0, 7)
   const action = '[action](https://github.com/marketplace/actions/python-coverage)'
   message = message.concat(`\n\n\n> **updated for commit: \`${sha}\` by ${action}🐍**`)
   message = `\n> current status: ${passOverall ? '✅' : '❌'}`.concat(message)
-  publishMessage(context.issue.number, message)
+  if (prNumber) {
+    publishMessage(prNumber, message)
+  } else {
+    // For push events, just write to summary
+    core.summary.addRaw(TITLE.concat(message)).write()
+  }
   core.endGroup()
 
   return passOverall
