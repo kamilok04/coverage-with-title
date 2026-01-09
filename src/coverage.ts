@@ -27,6 +27,7 @@ export function parseCoverageReport(report: string, files: CommitsComparison): F
   const threshAll = parseFloat(core.getInput('thresholdAll'))
   const avgCover = parseAverageCoverage(report, threshAll)
 
+
   const source = core.getInput('sourceDir') || parseSource(report)
   const threshModified = parseFloat(core.getInput('thresholdModified'))
   const modifiedCover = parseFilesCoverage(report, source, files.modifiedFiles, threshModified)
@@ -36,10 +37,30 @@ export function parseCoverageReport(report: string, files: CommitsComparison): F
   return {averageCover: avgCover, newCover, modifiedCover}
 }
 
+export function getTitle():String {
+  return escapeHtml(core.getInput('title'))
+
+}
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&')
 }
+var entityMap = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '/': '&#x2F;',
+  '`': '&#x60;',
+  '=': '&#x3D;'
+};
 
+function escapeHtml(string: string): string {
+  return string.replace(/[&<>"'`=\/]/g, function(s) {
+    return entityMap[s as keyof typeof entityMap];
+  });
+}
 export function parseFilesCoverage(
   report: string,
   source: string,
