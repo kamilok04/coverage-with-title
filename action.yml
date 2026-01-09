@@ -23,6 +23,9 @@ inputs:
   sourceDir:
     required: false
     description: the directory to use as the source of the coverage report
+  title:
+    required: false
+    description: the title of the report, preferably unique to the  PR/push
 runs:
   using: 'node20'
   main: 'dist/index.js'
