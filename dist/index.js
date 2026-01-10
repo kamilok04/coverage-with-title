@@ -346,7 +346,7 @@ function run() {
             core.info(`git new files: ${JSON.stringify(files.newFiles)} modified files: ${JSON.stringify(files.modifiedFiles)}`);
             const report = (0, readFile_1.default)(coverageFile);
             const filesCoverage = (0, coverage_1.parseCoverageReport)(report, files);
-            const passOverall = (0, scorePr_1.scorePr)(filesCoverage, prNumber, head);
+            const passOverall = yield (0, scorePr_1.scorePr)(filesCoverage, prNumber, head);
             if (!passOverall) {
                 core.setFailed('Coverage is lower than configured threshold 😭');
             }
@@ -470,47 +470,49 @@ function publishMessage(pr, message) {
 exports.publishMessage = publishMessage;
 function scorePr(filesCover, prNumber, head) {
     var _a, _b, _c;
-    let message = '';
-    let passOverall = true;
-    core.startGroup('Results');
-    const { coverTable: avgCoverTable, pass: passTotal } = (0, format_1.formatAverageTable)(filesCover.averageCover);
-    message = message.concat(`\n## Overall Coverage\n${avgCoverTable}`);
-    passOverall = passOverall && passTotal;
-    const coverAll = (0, format_1.toPercent)(filesCover.averageCover.ratio);
-    passTotal ? core.info(`Average coverage ${coverAll} ✅`) : core.error(`Average coverage ${coverAll} ❌`);
-    if ((_a = filesCover.newCover) === null || _a === void 0 ? void 0 : _a.length) {
-        const { coverTable, pass: passNew } = (0, format_1.formatFilesTable)(filesCover.newCover);
-        passOverall = passOverall && passNew;
-        message = message.concat(`\n## New Files\n${coverTable}`);
-        passNew ? core.info('New files coverage ✅') : core.error('New Files coverage ❌');
-    }
-    else {
-        message = message.concat(`\n## New Files\nNo new covered files...`);
-        core.info('No covered new files in this PR ');
-    }
-    if ((_b = filesCover.modifiedCover) === null || _b === void 0 ? void 0 : _b.length) {
-        const { coverTable, pass: passModified } = (0, format_1.formatFilesTable)(filesCover.modifiedCover);
-        passOverall = passOverall && passModified;
-        message = message.concat(`\n## Modified Files\n${coverTable}`);
-        passModified ? core.info('Modified files coverage ✅') : core.error('Modified Files coverage ❌');
-    }
-    else {
-        message = message.concat(`\n## Modified Files\nNo covered modified files...`);
-        core.info('No covered modified files in this PR ');
-    }
-    const sha = (head || ((_c = github_1.context.payload.pull_request) === null || _c === void 0 ? void 0 : _c.head.sha) || '').slice(0, 7);
-    const action = '[action](https://github.com/marketplace/actions/python-coverage)';
-    message = message.concat(`\n\n\n> **updated for commit: \`${sha}\` by ${action}🐍**`);
-    message = `\n> current status: ${passOverall ? '✅' : '❌'}`.concat(message);
-    if (prNumber) {
-        publishMessage(prNumber, message);
-    }
-    else {
-        // For push events, just write to summary
-        core.summary.addRaw(TITLE.concat(message)).write();
-    }
-    core.endGroup();
-    return passOverall;
+    return __awaiter(this, void 0, void 0, function* () {
+        let message = '';
+        let passOverall = true;
+        core.startGroup('Results');
+        const { coverTable: avgCoverTable, pass: passTotal } = (0, format_1.formatAverageTable)(filesCover.averageCover);
+        message = message.concat(`\n## Overall Coverage\n${avgCoverTable}`);
+        passOverall = passOverall && passTotal;
+        const coverAll = (0, format_1.toPercent)(filesCover.averageCover.ratio);
+        passTotal ? core.info(`Average coverage ${coverAll} ✅`) : core.error(`Average coverage ${coverAll} ❌`);
+        if ((_a = filesCover.newCover) === null || _a === void 0 ? void 0 : _a.length) {
+            const { coverTable, pass: passNew } = (0, format_1.formatFilesTable)(filesCover.newCover);
+            passOverall = passOverall && passNew;
+            message = message.concat(`\n## New Files\n${coverTable}`);
+            passNew ? core.info('New files coverage ✅') : core.error('New Files coverage ❌');
+        }
+        else {
+            message = message.concat(`\n## New Files\nNo new covered files...`);
+            core.info('No covered new files in this PR ');
+        }
+        if ((_b = filesCover.modifiedCover) === null || _b === void 0 ? void 0 : _b.length) {
+            const { coverTable, pass: passModified } = (0, format_1.formatFilesTable)(filesCover.modifiedCover);
+            passOverall = passOverall && passModified;
+            message = message.concat(`\n## Modified Files\n${coverTable}`);
+            passModified ? core.info('Modified files coverage ✅') : core.error('Modified Files coverage ❌');
+        }
+        else {
+            message = message.concat(`\n## Modified Files\nNo covered modified files...`);
+            core.info('No covered modified files in this PR ');
+        }
+        const sha = (head || ((_c = github_1.context.payload.pull_request) === null || _c === void 0 ? void 0 : _c.head.sha) || '').slice(0, 7);
+        const action = '[action](https://github.com/marketplace/actions/python-coverage)';
+        message = message.concat(`\n\n\n> **updated for commit: \`${sha}\` by ${action}🐍**`);
+        message = `\n> current status: ${passOverall ? '✅' : '❌'}`.concat(message);
+        if (prNumber) {
+            publishMessage(prNumber, message);
+        }
+        else {
+            // For push events, write as comment to the commit
+            yield client_1.octokit.rest.repos.createCommitComment(Object.assign(Object.assign({}, github_1.context.repo), { commit_sha: head, body: TITLE.concat(message) }));
+        }
+        core.endGroup();
+        return passOverall;
+    });
 }
 exports.scorePr = scorePr;
 

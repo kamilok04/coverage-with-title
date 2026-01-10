@@ -35,7 +35,7 @@ async function run(): Promise<void> {
 
     const report = readFile(coverageFile)
     const filesCoverage = parseCoverageReport(report, files)
-    const passOverall = scorePr(filesCoverage, prNumber, head)
+    const passOverall = await scorePr(filesCoverage, prNumber, head)
 
     if (!passOverall) {
       core.setFailed('Coverage is lower than configured threshold 😭')

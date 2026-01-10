@@ -35,7 +35,7 @@ export async function publishMessage(pr: number, message: string): Promise<void>
   }
 }
 
-export function scorePr(filesCover: FilesCoverage, prNumber?: number, head?: string): boolean {
+export async function scorePr(filesCover: FilesCoverage, prNumber?: number, head?: string): Promise<boolean> {
   let message = ''
   let passOverall = true
 
@@ -72,8 +72,12 @@ export function scorePr(filesCover: FilesCoverage, prNumber?: number, head?: str
   if (prNumber) {
     publishMessage(prNumber, message)
   } else {
-    // For push events, just write to summary
-    core.summary.addRaw(TITLE.concat(message)).write()
+    // For push events, write as comment to the commit
+    await octokit.rest.repos.createCommitComment({
+      ...context.repo,
+      commit_sha: head!,
+      body: TITLE.concat(message)
+    })
   }
   core.endGroup()
 
