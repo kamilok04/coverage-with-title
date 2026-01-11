@@ -11,28 +11,11 @@ export async function publishMessage(pr: number, message: string): Promise<void>
   const body = TITLE.concat(message)
   core.summary.addRaw(body).write()
 
-  const comments = await octokit.rest.issues.listComments({
+  await octokit.rest.issues.createComment({
     ...context.repo,
-    issue_number: pr
+    issue_number: pr,
+    body
   })
-  const exist = comments.data.find(commnet => {
-    return commnet.body?.startsWith(TITLE)
-  })
-
-  if (exist) {
-    await octokit.rest.issues.updateComment({
-      ...context.repo,
-      issue_number: pr,
-      comment_id: exist.id,
-      body
-    })
-  } else {
-    await octokit.rest.issues.createComment({
-      ...context.repo,
-      issue_number: pr,
-      body
-    })
-  }
 }
 
 export async function scorePr(filesCover: FilesCoverage, prNumber?: number, head?: string): Promise<boolean> {
