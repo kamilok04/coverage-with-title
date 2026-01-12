@@ -26,6 +26,14 @@ inputs:
   title:
     required: false
     description: the title of the report, preferably unique to the  PR/push
+  passIcon:
+    required: false
+    description: the indicator to use for files that passed
+    default: '🟢'
+  failIcon:
+    required: false
+    description: the indicator to use for files that failed
+    default: '🔴'
 runs:
   using: 'node20'
   main: 'dist/index.js'

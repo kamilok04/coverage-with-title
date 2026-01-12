@@ -1,6 +1,6 @@
 # Python Coverage: The Esential Coverage Reporter GitHub Action for python
 
-> ☂️ parse and publish coverage xml to a PR, enforce coverage rate on new & modified files
+> ☂️ parse and publish coverage xml to a PR or commit, enforce coverage rate on new & modified files
 
 ## Usage
 
@@ -32,6 +32,8 @@ jobs:
 
 ![message](./images/pr-message.png)
 
+> **Note:** This action creates a new comment on the pull request for each run, rather than updating existing coverage comments.
+
 ## Inputs
 
 | Input               | Optional  | Description                                      | Example                |
@@ -41,6 +43,7 @@ jobs:
 | `thresholdAll`      | ✅        | the minimal average line coverage                | 0.8                    |
 | `thresholdNew`      | ✅        | the minimal average new files line coverage      | 0.9                    |
 | `thresholdModified` | ✅        | the minimal average modified files line coverage | 0.0                    |
+| `title`             | ✅        | the title of the report, preferably unique to the PR/push |                        |
 | `passIcon`          | ✅        | the indicator to use for files that passed       | 🟢                      |
 | `failIcon`          | ✅        | the indicator to use for files that failed       | 🔴                      |
 | `sourceDir`         | ✅        | the directory to use as the source of the coverage report       | ./path/to/src          |
