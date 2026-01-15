@@ -46,4 +46,5 @@ jobs:
 | `title`             | ✅        | the title of the report, preferably unique to the PR/push |                        |
 | `passIcon`          | ✅        | the indicator to use for files that passed       | 🟢                      |
 | `failIcon`          | ✅        | the indicator to use for files that failed       | 🔴                      |
+| `include-all-files` | ✅        | whether to include coverage details for all files, not just modified/new ones | false                  |
 | `sourceDir`         | ✅        | the directory to use as the source of the coverage report       | ./path/to/src          |

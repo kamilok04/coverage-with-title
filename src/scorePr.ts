@@ -48,6 +48,13 @@ export async function scorePr(filesCover: FilesCoverage, prNumber?: number, head
     message = message.concat(`\n## Modified Files\nNo covered modified files...`)
     core.info('No covered modified files in this PR ')
   }
+
+  if (filesCover.allCover?.length) {
+    const {coverTable, pass: passAll} = formatFilesTable(filesCover.allCover)
+    passOverall = passOverall && passAll
+    message = message.concat(`\n## All Files\n${coverTable}`)
+    passAll ? core.info('All files coverage ✅') : core.error('All Files coverage ❌')
+  }
   const sha = (head || context.payload.pull_request?.head.sha || '').slice(0, 7)
   const action = '[action](https://github.com/marketplace/actions/python-coverage)'
   message = message.concat(`\n\n\n> **updated for commit: \`${sha}\` by ${action}🐍**`)

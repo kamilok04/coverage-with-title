@@ -34,6 +34,10 @@ inputs:
     required: false
     description: the indicator to use for files that failed
     default: '🔴'
+  include-all-files:
+    required: false
+    description: whether to include coverage details for all files, not just modified/new ones
+    default: 'true'
 runs:
   using: 'node20'
   main: 'dist/index.js'

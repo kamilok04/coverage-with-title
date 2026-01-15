@@ -1,4 +1,4 @@
-import {parseFilesCoverage, parseSource, parseAverageCoverage} from './coverage'
+import {parseFilesCoverage, parseSource, parseAverageCoverage, parseAllFilesCoverage} from './coverage'
 import fs from 'fs'
 import {parse} from 'path/posix'
 
@@ -39,5 +39,16 @@ describe('tests', () => {
     const report = fs.readFileSync(coverageFilePathV1, 'utf8')
     const parsed = parseSource(report)
     expect(parsed).toBe('src')
+  })
+
+  it('parses all files coverage', () => {
+    const report = fs.readFileSync(coverageFilePathV1, 'utf8')
+    const parsed = parseAllFilesCoverage(report, 'src', 0.8)
+    expect(parsed).toBeDefined()
+    expect(parsed!.length).toBeGreaterThan(0)
+    // Check that it includes files with different coverage
+    const coverageValues = parsed!.map(p => p.cover)
+    expect(coverageValues).toContain(0.99) // coverage.ts
+    expect(coverageValues).toContain(0) // main.ts
   })
 })

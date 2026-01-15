@@ -21,6 +21,7 @@ export type FilesCoverage = {
   averageCover: AverageCoverage
   newCover?: Coverage[]
   modifiedCover?: Coverage[]
+  allCover?: Coverage[]
 }
 
 export function parseCoverageReport(report: string, files: CommitsComparison): FilesCoverage {
@@ -33,7 +34,11 @@ export function parseCoverageReport(report: string, files: CommitsComparison): F
 
   const threshNew = parseFloat(core.getInput('thresholdNew'))
   const newCover = parseFilesCoverage(report, source, files.newFiles, threshNew)
-  return {averageCover: avgCover, newCover, modifiedCover}
+
+  const includeAllFiles = core.getInput('include-all-files') === 'true'
+  const allCover = includeAllFiles ? parseAllFilesCoverage(report, source, threshAll) : undefined
+
+  return {averageCover: avgCover, newCover, modifiedCover, allCover}
 }
 
 export function getTitle(): String {
@@ -73,6 +78,16 @@ export function parseFilesCoverage(
     return {file, cover, pass: cover >= threshold}
   })
   return coverages?.filter(cover => cover.cover >= 0)
+}
+
+export function parseAllFilesCoverage(report: string, source: string, threshold: number): Coverage[] | undefined {
+  const filenameRegex = /filename="([^"]+)"/g
+  const files: string[] = []
+  let match
+  while ((match = filenameRegex.exec(report)) !== null) {
+    files.push(`${source}/${match[1]}`)
+  }
+  return parseFilesCoverage(report, source, files, threshold)
 }
 
 export function parseSource(report: string): string {
